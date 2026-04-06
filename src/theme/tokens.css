@@ -1,0 +1,17 @@
+:root {
+  --bg-main: #f8f8f8;
+  --bg-panel: #f0f2f3;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --text-main: #142033;
+  --text-muted: #5b6a75;
+  --accent-cyan: #00d9ff;
+  --accent-ice: #7ef3ff;
+  --accent-violet: #2754b6;
+  --grid-line: #dde5e9;
+  --border-main: #d0dde2;
+  --glow-cyan: 0 0 8px rgba(0, 217, 255, 0.4);
+  --shadow-panel: 0 10px 24px rgba(19, 32, 51, 0.12);
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-ui: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, monospace;
+}
