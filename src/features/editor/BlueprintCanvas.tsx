@@ -6,10 +6,11 @@ import {
   MiniMap,
   Node,
   NodeChange,
+  Panel,
   ReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RelationshipEdge } from "../../components/RelationshipEdge";
 import { TableNode } from "../../components/TableNode";
 import { useSchemaStore } from "../../store/useSchemaStore";
@@ -63,6 +64,19 @@ const sameIds = (left: string[], right: string[]): boolean => {
   return true;
 };
 
+const TABLE_LAYOUT = {
+  width: 300,
+  headerHeight: 52,
+  columnRowHeight: 34,
+  footerPadding: 16,
+  horizontalGap: 40,
+  verticalGap: 40,
+  padding: 24,
+};
+
+const getTableLayoutHeight = (columnCount: number): number =>
+  TABLE_LAYOUT.headerHeight + columnCount * TABLE_LAYOUT.columnRowHeight + TABLE_LAYOUT.footerPadding;
+
 export const BlueprintCanvas = ({ databaseId }: BlueprintCanvasProps) => {
   const database = useSchemaStore((state) => state.getDatabaseById(databaseId));
   const addColumn = useSchemaStore((state) => state.addColumn);
@@ -76,6 +90,43 @@ export const BlueprintCanvas = ({ databaseId }: BlueprintCanvasProps) => {
   );
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([]);
+  const canvasRootRef = useRef<HTMLDivElement>(null);
+
+  const autoOrganize = useCallback(() => {
+    if (!database) {
+      return;
+    }
+
+    const zoom = database.canvasState.zoom ?? 0.8;
+    const containerWidth = canvasRootRef.current?.clientWidth ?? 800;
+    const flowWidth = containerWidth / zoom;
+    const cols = Math.max(
+      1,
+      Math.floor(
+        (flowWidth - TABLE_LAYOUT.padding * 2) / (TABLE_LAYOUT.width + TABLE_LAYOUT.horizontalGap),
+      ),
+    );
+
+    let currentRowTop = TABLE_LAYOUT.padding;
+
+    database.tables.forEach((table, index) => {
+      const col = index % cols;
+      const row = Math.floor(index / cols);
+
+      if (col === 0 && row > 0) {
+        const previousRow = database.tables.slice((row - 1) * cols, row * cols);
+        const previousRowHeight = Math.max(
+          ...previousRow.map((rowTable) => getTableLayoutHeight(rowTable.columns.length)),
+        );
+        currentRowTop += previousRowHeight + TABLE_LAYOUT.verticalGap;
+      }
+
+      const x =
+        TABLE_LAYOUT.padding + col * (TABLE_LAYOUT.width + TABLE_LAYOUT.horizontalGap);
+      const y = currentRowTop;
+      setTablePosition(databaseId, table.id, x, y);
+    });
+  }, [database, databaseId, setTablePosition]);
 
   const nodes = useMemo<Node[]>(() => {
     if (!database) {
@@ -229,13 +280,14 @@ export const BlueprintCanvas = ({ databaseId }: BlueprintCanvasProps) => {
   }
 
   return (
-    <div className="canvas-root">
+    <div className="canvas-root" ref={canvasRootRef}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
         onSelectionChange={onSelectionChange}
         onConnect={onConnect}
+        panOnDrag={[1]}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         defaultViewport={{
@@ -248,6 +300,16 @@ export const BlueprintCanvas = ({ databaseId }: BlueprintCanvasProps) => {
         <Background gap={18} size={1} color="var(--grid-line)" />
         <Controls />
         <MiniMap pannable zoomable />
+        <Panel position="top-right">
+          <button
+            type="button"
+            className="canvas-organize-btn"
+            onClick={autoOrganize}
+            title="Auto-organize tables into a grid"
+          >
+            Auto Organize
+          </button>
+        </Panel>
       </ReactFlow>
     </div>
   );

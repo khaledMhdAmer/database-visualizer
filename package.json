@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "node server/index.mjs",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
     "preview": "vite preview"
@@ -23,6 +25,9 @@
   },
   "dependencies": {
     "@xyflow/react": "^12.10.2",
+    "better-sqlite3": "^12.4.1",
+    "concurrently": "^9.2.1",
+    "express": "^5.1.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",

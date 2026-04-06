@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { migrateLegacyBrowserData } from "../../persistence/jsonStorage";
 import { useSchemaStore } from "../../store/useSchemaStore";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
   const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [migrationStatus, setMigrationStatus] = useState<string>("");
+  const [isMigrating, setIsMigrating] = useState(false);
 
   const databases = useSchemaStore((state) => state.schema.databases);
   const createDatabase = useSchemaStore((state) => state.createDatabase);
@@ -21,14 +24,43 @@ export const LandingPage = () => {
     navigate(`/database/${id}`);
   };
 
+  const onMigrateBrowserData = async () => {
+    setIsMigrating(true);
+    setMigrationStatus("");
+
+    try {
+      const migrated = await migrateLegacyBrowserData();
+
+      if (!migrated) {
+        setMigrationStatus("No legacy browser data found to migrate.");
+        return;
+      }
+
+      setMigrationStatus("Migration completed. Reloading...");
+      window.setTimeout(() => {
+        window.location.reload();
+      }, 600);
+    } catch {
+      setMigrationStatus("Migration failed. Please ensure the local server is running.");
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
   return (
     <main className="landing-page">
       <header className="landing-header">
         <h1>Blueprint Schema Designer</h1>
         <p>Design logical database schemas as a live node graph.</p>
-        <button className="primary-btn" onClick={onCreate} type="button">
-          Add New Database
-        </button>
+        <div className="landing-header-actions">
+          <button className="primary-btn" onClick={onCreate} type="button">
+            Add New Database
+          </button>
+          <button type="button" onClick={onMigrateBrowserData} disabled={isMigrating}>
+            {isMigrating ? "Migrating..." : "Migrate Browser Data"}
+          </button>
+        </div>
+        {migrationStatus ? <small className="landing-migration-status">{migrationStatus}</small> : null}
       </header>
 
       {sortedDatabases.length === 0 ? (

@@ -1,6 +1,24 @@
 import { useMemo, useState } from "react";
 import { useSchemaStore } from "../../store/useSchemaStore";
 
+const TrashIcon = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+    <path
+      d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
+const CloseIcon = () => (
+  <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false">
+    <path
+      d="M18.3 5.7a1 1 0 0 0-1.4 0L12 10.6 7.1 5.7a1 1 0 1 0-1.4 1.4l4.9 4.9-4.9 4.9a1 1 0 1 0 1.4 1.4l4.9-4.9 4.9 4.9a1 1 0 0 0 1.4-1.4l-4.9-4.9 4.9-4.9a1 1 0 0 0 0-1.4z"
+      fill="currentColor"
+    />
+  </svg>
+);
+
 const FIELD_TYPE_OPTIONS = [
   { value: "VARCHAR(255)", label: "Short text" },
   { value: "TEXT", label: "Long text" },
@@ -57,8 +75,8 @@ export const SchemaBuilder = ({ databaseId }: SchemaBuilderProps) => {
     <section className="schema-builder">
       <div className="pane-title-row">
         <h2>Design Your Data Form</h2>
-        <button type="button" onClick={() => addTable(databaseId, `Section_${database.tables.length + 1}`)}>
-          Add Section
+        <button type="button" onClick={() => addTable(databaseId, `Table_${database.tables.length + 1}`)}>
+          Add Table
         </button>
       </div>
 
@@ -69,100 +87,87 @@ export const SchemaBuilder = ({ databaseId }: SchemaBuilderProps) => {
 
           return (
             <article key={table.id} className="table-editor-card">
-              <div className="table-row">
-                <button
-                  type="button"
-                  className="section-collapse-toggle"
-                  onClick={() => toggleSection(table.id)}
-                  aria-label={isCollapsed ? "Expand section" : "Collapse section"}
-                >
-                  {isCollapsed ? "+" : "-"}
-                </button>
-                <input
-                  value={table.name}
-                  onChange={(event) => renameTable(databaseId, table.id, event.target.value)}
-                  className={duplicateName ? "invalid" : ""}
-                  placeholder="Section name (example: Users, Businesses)"
-                />
-                <button type="button" onClick={() => addColumn(databaseId, table.id)}>
-                  + Field
-                </button>
-                <button type="button" className="danger" onClick={() => deleteTable(databaseId, table.id)}>
-                  Remove Section
-                </button>
+              <div className="table-editor-header">
+                <div className="table-row">
+                  <input
+                    value={table.name}
+                    onChange={(event) => renameTable(databaseId, table.id, event.target.value)}
+                    className={duplicateName ? "invalid" : ""}
+                    placeholder="Table name (example: Users, Businesses)"
+                  />
+                  <button type="button" onClick={() => addColumn(databaseId, table.id)}>
+                    + Field
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-btn danger table-remove-btn"
+                    onClick={() => deleteTable(databaseId, table.id)}
+                    aria-label="Delete table"
+                    title="Delete table"
+                  >
+                    <TrashIcon />
+                  </button>
+                  <button
+                    type="button"
+                    className="section-collapse-toggle"
+                    onClick={() => toggleSection(table.id)}
+                    aria-label={isCollapsed ? "Expand section" : "Collapse section"}
+                  >
+                    {isCollapsed ? "+" : "-"}
+                  </button>
+                </div>
+
+                {duplicateName ? <small className="error-text">This table name is already used.</small> : null}
               </div>
 
-              {duplicateName ? <small className="error-text">This section name is already used.</small> : null}
+              <div className={`table-editor-body ${isCollapsed ? "is-collapsed" : ""}`}>
+                <div className="column-list">
+                  {table.columns.map((column) => {
+                    const duplicateColumn =
+                      table.columns.filter(
+                        (candidate) =>
+                          candidate.name.trim().toLowerCase() === column.name.trim().toLowerCase(),
+                      ).length > 1;
 
-              <div className={`column-list ${isCollapsed ? "is-collapsed" : ""}`}>
-                {table.columns.map((column) => {
-                  const duplicateColumn =
-                    table.columns.filter(
-                      (candidate) =>
-                        candidate.name.trim().toLowerCase() === column.name.trim().toLowerCase(),
-                    ).length > 1;
-
-                  return (
-                    <div className="column-row" key={column.id}>
-                      <input
-                        value={column.name}
-                        onChange={(event) =>
-                          updateColumn(databaseId, table.id, column.id, { name: event.target.value })
-                        }
-                        className={duplicateColumn ? "invalid" : ""}
-                        disabled={column.isPrimaryKey}
-                        placeholder="Field name"
-                      />
-                      <select
-                        value={column.type}
-                        onChange={(event) =>
-                          updateColumn(databaseId, table.id, column.id, {
-                            type: event.target.value,
-                          })
-                        }
-                      >
-                        {FIELD_TYPE_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <label>
+                    return (
+                      <div className="column-row" key={column.id}>
                         <input
-                          type="checkbox"
-                          checked={column.isNullable}
+                          value={column.name}
                           onChange={(event) =>
-                            updateColumn(databaseId, table.id, column.id, {
-                              isNullable: event.target.checked,
-                            })
+                            updateColumn(databaseId, table.id, column.id, { name: event.target.value })
                           }
+                          className={duplicateColumn ? "invalid" : ""}
                           disabled={column.isPrimaryKey}
+                          placeholder="Field name"
                         />
-                        optional
-                      </label>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={column.isUnique}
+                        <select
+                          value={column.type}
                           onChange={(event) =>
                             updateColumn(databaseId, table.id, column.id, {
-                              isUnique: event.target.checked,
+                              type: event.target.value,
                             })
                           }
-                        />
-                        no duplicates
-                      </label>
-                      <button
-                        type="button"
-                        className="danger"
-                        disabled={column.isPrimaryKey}
-                        onClick={() => deleteColumn(databaseId, table.id, column.id)}
-                      >
-                        Remove Field
-                      </button>
-                    </div>
-                  );
-                })}
+                        >
+                          {FIELD_TYPE_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          className="icon-btn danger"
+                          disabled={column.isPrimaryKey}
+                          onClick={() => deleteColumn(databaseId, table.id, column.id)}
+                          aria-label="Delete field"
+                          title="Delete field"
+                        >
+                          <CloseIcon />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </article>
           );

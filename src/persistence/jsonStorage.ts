@@ -4,8 +4,9 @@ import {
   type SchemaFile,
 } from "../types/schema";
 
-const STORAGE_KEY = "blueprint-schema-designer";
-const TEMP_STORAGE_KEY = `${STORAGE_KEY}:tmp`;
+const SCHEMA_API = "/api/schema";
+const LEGACY_STORAGE_KEY = "blueprint-schema-designer";
+const MIGRATION_MARKER_KEY = "blueprint-schema-designer:migrated-to-sqlite";
 
 let saveTimer: number | undefined;
 
@@ -24,14 +25,40 @@ const sanitizeSchema = (raw: unknown): SchemaFile => {
   };
 };
 
-export const loadSchema = (): SchemaFile => {
+const readLegacySchema = (): SchemaFile | null => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
+    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+    if (!legacy) {
+      return null;
+    }
+
+    const parsed = JSON.parse(legacy);
+    const schema = sanitizeSchema(parsed);
+    return schema.databases.length > 0 ? schema : null;
+  } catch {
+    return null;
+  }
+};
+
+export const migrateLegacyBrowserData = async (): Promise<boolean> => {
+  const legacySchema = readLegacySchema();
+  if (!legacySchema) {
+    return false;
+  }
+
+  await atomicSave(legacySchema);
+  localStorage.setItem(MIGRATION_MARKER_KEY, "1");
+  return true;
+};
+
+export const loadSchema = async (): Promise<SchemaFile> => {
+  try {
+    const response = await fetch(SCHEMA_API);
+    if (!response.ok) {
       return DEFAULT_SCHEMA_FILE;
     }
 
-    const parsed = JSON.parse(raw);
+    const parsed = await response.json();
     const schema = sanitizeSchema(parsed);
 
     if (!schema.version) {
@@ -41,17 +68,28 @@ export const loadSchema = (): SchemaFile => {
       };
     }
 
+    const alreadyMigrated = localStorage.getItem(MIGRATION_MARKER_KEY) === "1";
+    if (!alreadyMigrated && schema.databases.length === 0) {
+      const migrated = await migrateLegacyBrowserData();
+      if (migrated) {
+        return readLegacySchema() ?? schema;
+      }
+    }
+
     return schema;
   } catch {
     return DEFAULT_SCHEMA_FILE;
   }
 };
 
-export const atomicSave = (data: SchemaFile): void => {
-  const payload = JSON.stringify(data);
-  localStorage.setItem(TEMP_STORAGE_KEY, payload);
-  localStorage.setItem(STORAGE_KEY, payload);
-  localStorage.removeItem(TEMP_STORAGE_KEY);
+const atomicSave = async (data: SchemaFile): Promise<void> => {
+  await fetch(SCHEMA_API, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 };
 
 export const saveSchema = (data: SchemaFile): void => {
@@ -60,6 +98,6 @@ export const saveSchema = (data: SchemaFile): void => {
   }
 
   saveTimer = window.setTimeout(() => {
-    atomicSave(data);
+    void atomicSave(data);
   }, 300);
 };
