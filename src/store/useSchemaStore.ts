@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { loadSchema, saveSchema } from "../persistence/jsonStorage";
+import { loadSchema, saveSchema, importSchemaFromFile, exportSchemaToFile } from "../persistence/jsonStorage";
 import { applyFkAutoAdd } from "../utils/fkAutoAdd";
 import type { Column, ColumnType, DatabaseSchema, Relationship, SchemaFile, Table } from "../types/schema";
 
@@ -35,6 +35,8 @@ interface SchemaStore {
   setSplitPaneWidth: (databaseId: string, width: number) => void;
   setViewport: (databaseId: string, x: number, y: number, zoom: number) => void;
   getDatabaseById: (databaseId: string) => DatabaseSchema | undefined;
+  importFromFile: (file: File) => Promise<void>;
+  exportToFile: (filename?: string) => void;
 }
 
 const touch = (database: DatabaseSchema): DatabaseSchema => ({
@@ -667,6 +669,21 @@ export const useSchemaStore = create<SchemaStore>((set, get) => ({
   },
 
   getDatabaseById: (databaseId) => get().schema.databases.find((database) => database.id === databaseId),
+
+  importFromFile: async (file: File) => {
+    try {
+      const importedSchema = await importSchemaFromFile(file);
+      set({ schema: importedSchema });
+      saveSchema(importedSchema);
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  exportToFile: (filename = "schema.json") => {
+    const { schema } = get();
+    exportSchemaToFile(schema, filename);
+  },
 }));
 
 export const COLUMN_TYPES: ColumnType[] = [

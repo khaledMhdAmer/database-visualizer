@@ -1,0 +1,290 @@
+{
+  "version": 1,
+  "databases": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "E-Commerce Database",
+      "createdAt": "2026-04-26T08:00:00.000Z",
+      "updatedAt": "2026-04-26T08:30:00.000Z",
+      "tables": [
+        {
+          "id": "users-table-001",
+          "name": "users",
+          "columns": [
+            {
+              "id": "col-id-001",
+              "name": "id",
+              "type": "UUID",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "col-email-001",
+              "name": "email",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "col-password-001",
+              "name": "password_hash",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "col-name-001",
+              "name": "first_name",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": true,
+              "isUnique": false
+            },
+            {
+              "id": "col-last-name-001",
+              "name": "last_name",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": true,
+              "isUnique": false
+            },
+            {
+              "id": "col-created-001",
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            }
+          ]
+        },
+        {
+          "id": "products-table-001",
+          "name": "products",
+          "columns": [
+            {
+              "id": "col-id-002",
+              "name": "id",
+              "type": "UUID",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "col-name-002",
+              "name": "name",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "col-desc-002",
+              "name": "description",
+              "type": "TEXT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": true,
+              "isUnique": false
+            },
+            {
+              "id": "col-price-002",
+              "name": "price",
+              "type": "FLOAT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "col-stock-002",
+              "name": "stock_quantity",
+              "type": "INT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            }
+          ]
+        },
+        {
+          "id": "orders-table-001",
+          "name": "orders",
+          "columns": [
+            {
+              "id": "col-id-003",
+              "name": "id",
+              "type": "UUID",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "col-user-id-003",
+              "name": "user_id",
+              "type": "UUID",
+              "isPrimaryKey": false,
+              "isForeignKey": true,
+              "isNullable": false,
+              "isUnique": false,
+              "references": {
+                "tableId": "users-table-001",
+                "columnId": "col-id-001"
+              }
+            },
+            {
+              "id": "col-status-003",
+              "name": "status",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "col-total-003",
+              "name": "total_amount",
+              "type": "FLOAT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "col-created-003",
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            }
+          ]
+        },
+        {
+          "id": "order-items-table-001",
+          "name": "order_items",
+          "columns": [
+            {
+              "id": "col-id-004",
+              "name": "id",
+              "type": "UUID",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "col-order-id-004",
+              "name": "order_id",
+              "type": "UUID",
+              "isPrimaryKey": false,
+              "isForeignKey": true,
+              "isNullable": false,
+              "isUnique": false,
+              "references": {
+                "tableId": "orders-table-001",
+                "columnId": "col-id-003"
+              }
+            },
+            {
+              "id": "col-product-id-004",
+              "name": "product_id",
+              "type": "UUID",
+              "isPrimaryKey": false,
+              "isForeignKey": true,
+              "isNullable": false,
+              "isUnique": false,
+              "references": {
+                "tableId": "products-table-001",
+                "columnId": "col-id-002"
+              }
+            },
+            {
+              "id": "col-qty-004",
+              "name": "quantity",
+              "type": "INT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "col-price-004",
+              "name": "unit_price",
+              "type": "FLOAT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "id": "rel-001",
+          "sourceTableId": "orders-table-001",
+          "sourceColumnId": "col-user-id-003",
+          "targetTableId": "users-table-001",
+          "targetColumnId": "col-id-001",
+          "type": "one-to-many"
+        },
+        {
+          "id": "rel-002",
+          "sourceTableId": "order-items-table-001",
+          "sourceColumnId": "col-order-id-004",
+          "targetTableId": "orders-table-001",
+          "targetColumnId": "col-id-003",
+          "type": "one-to-many"
+        },
+        {
+          "id": "rel-003",
+          "sourceTableId": "order-items-table-001",
+          "sourceColumnId": "col-product-id-004",
+          "targetTableId": "products-table-001",
+          "targetColumnId": "col-id-002",
+          "type": "one-to-many"
+        }
+      ],
+      "canvasState": {
+        "zoom": 0.8,
+        "pan": {
+          "x": 0,
+          "y": 0
+        },
+        "splitPaneWidth": 50,
+        "nodePositions": {
+          "users-table-001": {
+            "x": 50,
+            "y": 100
+          },
+          "products-table-001": {
+            "x": 450,
+            "y": 100
+          },
+          "orders-table-001": {
+            "x": 250,
+            "y": 350
+          },
+          "order-items-table-001": {
+            "x": 450,
+            "y": 350
+          }
+        }
+      }
+    }
+  ]
+}

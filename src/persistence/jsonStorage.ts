@@ -101,3 +101,43 @@ export const saveSchema = (data: SchemaFile): void => {
     void atomicSave(data);
   }, 300);
 };
+
+export const importSchemaFromFile = (file: File): Promise<SchemaFile> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        const parsed = JSON.parse(content);
+        const schema = sanitizeSchema(parsed);
+        resolve(schema);
+      } catch (error) {
+        reject(
+          new Error(
+            `Failed to parse JSON file: ${error instanceof Error ? error.message : "Unknown error"}`,
+          ),
+        );
+      }
+    };
+
+    reader.onerror = () => {
+      reject(new Error("Failed to read file"));
+    };
+
+    reader.readAsText(file);
+  });
+};
+
+export const exportSchemaToFile = (schema: SchemaFile, filename: string = "schema.json"): void => {
+  const dataStr = JSON.stringify(schema, null, 2);
+  const dataBlob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(dataBlob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};

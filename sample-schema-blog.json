@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "databases": [
+    {
+      "id": "blog-db-001",
+      "name": "Simple Blog Database",
+      "createdAt": "2026-04-26T08:00:00.000Z",
+      "updatedAt": "2026-04-26T08:30:00.000Z",
+      "tables": [
+        {
+          "id": "authors-tbl",
+          "name": "authors",
+          "columns": [
+            {
+              "id": "authors-id",
+              "name": "id",
+              "type": "INT",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "authors-name",
+              "name": "name",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "authors-email",
+              "name": "email",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": true,
+              "isUnique": true
+            }
+          ]
+        },
+        {
+          "id": "posts-tbl",
+          "name": "posts",
+          "columns": [
+            {
+              "id": "posts-id",
+              "name": "id",
+              "type": "INT",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "posts-author-id",
+              "name": "author_id",
+              "type": "INT",
+              "isPrimaryKey": false,
+              "isForeignKey": true,
+              "isNullable": false,
+              "isUnique": false,
+              "references": {
+                "tableId": "authors-tbl",
+                "columnId": "authors-id"
+              }
+            },
+            {
+              "id": "posts-title",
+              "name": "title",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "posts-content",
+              "name": "content",
+              "type": "TEXT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "posts-published",
+              "name": "published_at",
+              "type": "TIMESTAMP",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": true,
+              "isUnique": false
+            }
+          ]
+        },
+        {
+          "id": "comments-tbl",
+          "name": "comments",
+          "columns": [
+            {
+              "id": "comments-id",
+              "name": "id",
+              "type": "INT",
+              "isPrimaryKey": true,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": true
+            },
+            {
+              "id": "comments-post-id",
+              "name": "post_id",
+              "type": "INT",
+              "isPrimaryKey": false,
+              "isForeignKey": true,
+              "isNullable": false,
+              "isUnique": false,
+              "references": {
+                "tableId": "posts-tbl",
+                "columnId": "posts-id"
+              }
+            },
+            {
+              "id": "comments-author",
+              "name": "author",
+              "type": "VARCHAR(255)",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "comments-body",
+              "name": "body",
+              "type": "TEXT",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            },
+            {
+              "id": "comments-created",
+              "name": "created_at",
+              "type": "TIMESTAMP",
+              "isPrimaryKey": false,
+              "isForeignKey": false,
+              "isNullable": false,
+              "isUnique": false
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "id": "rel-posts-authors",
+          "sourceTableId": "posts-tbl",
+          "sourceColumnId": "posts-author-id",
+          "targetTableId": "authors-tbl",
+          "targetColumnId": "authors-id",
+          "type": "one-to-many"
+        },
+        {
+          "id": "rel-comments-posts",
+          "sourceTableId": "comments-tbl",
+          "sourceColumnId": "comments-post-id",
+          "targetTableId": "posts-tbl",
+          "targetColumnId": "posts-id",
+          "type": "one-to-many"
+        }
+      ],
+      "canvasState": {
+        "zoom": 0.8,
+        "pan": {
+          "x": 0,
+          "y": 0
+        },
+        "splitPaneWidth": 50,
+        "nodePositions": {
+          "authors-tbl": {
+            "x": 100,
+            "y": 50
+          },
+          "posts-tbl": {
+            "x": 400,
+            "y": 50
+          },
+          "comments-tbl": {
+            "x": 400,
+            "y": 300
+          }
+        }
+      }
+    }
+  ]
+}
